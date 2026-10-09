@@ -1,0 +1,99 @@
+classDiagram
+    class Item {
+        +UUID id
+        +String itemType
+        +String traceabilityInfo
+        +isManufacturable() bool
+    }
+    class BOM {
+        +int version
+        +Decimal outputQty
+        +String status
+        +publish()
+    }
+    class BOMLine {
+        +Decimal quantity
+    }
+    class SalesOrder {
+        +int priority
+        +Date dueDate
+        +confirm()
+        +cancel()
+    }
+    class SalesOrderLine {
+        +Decimal quantity
+        +unplannedQty() Decimal
+        +productionProgress() Decimal
+    }
+    class PlanRun {
+        +String status
+        +int revision
+        +publish()
+    }
+    class PlanTask {
+        +Decimal quantity
+        +int effectivePriority
+        +int suggestedSequence
+        +int manualSequence
+    }
+    class PlanAllocation {
+        +String kind
+        +Decimal plannedQty
+        +int prioritySnapshot
+        +int allocationRank
+    }
+    class ProductionBatch {
+        +String status
+        +int revision
+    }
+    class ProductionAllocation {
+        +String kind
+        +Decimal plannedQty
+        +Decimal fulfilledQty
+        +int prioritySnapshot
+        +int allocationRank
+    }
+    class ReportAllocation {
+        +Decimal quantityDelta
+    }
+    class ProductionOrder {
+        +Decimal plannedQty
+        +Decimal completedQty
+        +int effectivePriority
+        +String status
+        +start()
+        +pause()
+        +report()
+    }
+    class ProductionReport {
+        +Decimal quantityDelta
+        +String idempotencyKey
+        +reverse()
+    }
+    class PlanningService {
+        +generate()
+        +expandBOM()
+        +mergeCompatibleDemands()
+        +topologicalSort()
+    }
+    Item "1" --> "0..*" BOM : 产品
+    BOM "1" *-- "0..*" BOMLine : 草稿可为空
+    BOMLine "0..*" --> "1" Item : 组件
+    SalesOrder "1" *-- "0..*" SalesOrderLine
+    SalesOrderLine "0..*" --> "1" Item
+    PlanRun "1" *-- "0..*" PlanTask
+    PlanTask "1" *-- "1..*" PlanAllocation
+    PlanAllocation "0..*" --> "0..1" PlanAllocation : 父需求
+    PlanAllocation "0..*" --> "0..1" SalesOrderLine : 来源
+    PlanTask "0..1" --> "0..1" ProductionOrder : 发布为
+    ProductionBatch "1" *-- "0..*" ProductionOrder
+    ProductionOrder "1" *-- "1..*" ProductionAllocation
+    ProductionAllocation "0..*" --> "0..1" ProductionAllocation : 父制造需求
+    ProductionAllocation "0..*" --> "0..1" SalesOrderLine : 销售来源
+    ProductionOrder "0..*" --> "1" Item : 产品
+    ProductionOrder "1" *-- "0..*" ProductionReport
+    ProductionReport "1" *-- "1..*" ReportAllocation
+    ReportAllocation "0..*" --> "1" ProductionAllocation : 回分产量
+    PlanningService ..> BOM
+    PlanningService ..> SalesOrderLine
+    PlanningService ..> PlanRun

@@ -1,0 +1,33 @@
+sequenceDiagram
+    actor U as 全权限用户
+    participant V as Vue 排产页
+    participant P as PlanningService
+    participant W as PlanPublishService
+    participant D as PostgreSQL
+    U->>V: 选择销售单并生成建议
+    V->>P: generate(order_ids)
+    P->>D: 一致性读取需求、占用、BOM
+    D-->>P: 输入快照
+    P->>P: 按来源展开、兼容合并、五级拓扑排序
+    P->>D: 保存候选方案与输入指纹
+    P-->>V: 合并任务、来源分配、依赖图及排序解释
+    U->>V: 按销售行调数量，复核顺序和日期
+    V->>P: PATCH plan + revision
+    P->>P: 重算来源分配及合并图，校验依赖
+    P->>D: 保存调整与新 revision
+    U->>V: 发布
+    V->>W: publish(plan_id, revision, idempotency_key)
+    W->>D: BEGIN / 图锁 / 销售行与方案锁
+    W->>D: 校验幂等、输入版本、最新需求占用
+    alt 已成功处理同一请求
+        D-->>W: 原生产单集合
+        W->>D: 结束事务
+        W-->>V: 返回原结果
+    else 输入过期或需求不足
+        W->>D: ROLLBACK
+        W-->>V: 409 PLAN_STALE
+    else 合法
+        W->>D: 创建批次、合并单、分配、快照及幂等结果
+        W->>D: COMMIT
+        W-->>V: 生产单集合
+    end

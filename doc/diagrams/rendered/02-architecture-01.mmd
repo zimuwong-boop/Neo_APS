@@ -1,0 +1,18 @@
+flowchart LR
+    U[全权限用户] --> V[Vue 3 页面]
+    V -->|JSON REST / 会话认证| API[Django REST Framework]
+    API --> M[物料与 BOM 服务]
+    API --> S[销售服务]
+    API --> P[计划与发布服务]
+    API --> W[生产与报工服务]
+    API --> R[进度查询服务]
+    P --> M
+    P --> S
+    P --> W
+    W --> R
+    M --> DB[(PostgreSQL)]
+    S --> DB
+    P --> DB
+    W --> DB
+    R --> DB
+    V -. 每 2 秒批量读取进度 .-> R

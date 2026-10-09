@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor User
+    participant Vue
+    participant API
+    participant PG as PostgreSQL
+    User->>Vue: 调演示进度（小于100%）
+    Vue->>API: POST demo-progress + revision
+    API->>PG: 事务图锁 / 版本与状态校验
+    API->>PG: 保存演示百分比 + 审计
+    Note over API,PG: 不写真实报工量或分配完成量
+    loop 每2秒同步
+        Vue->>API: 查询生产单 / 销售单
+        API->>API: 按冻结来源预览展示量 / 未真实完成限制99.99%
+        API-->>Vue: 实际值 + 展示值 + 演示标记
+    end
+    User->>API: 提交真实报工
+    API->>PG: 正常报工回分 + 清空该单演示值
+    API-->>Vue: 回到真实进度 / 正常完成规则

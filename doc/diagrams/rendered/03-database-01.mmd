@@ -1,0 +1,164 @@
+erDiagram
+    ITEM ||--o{ BOM : manufactured_by
+    BOM ||--o{ BOM_LINE : contains
+    ITEM ||--o{ BOM_LINE : component
+    SALES_ORDER ||--o{ SALES_ORDER_LINE : contains
+    ITEM ||--o{ SALES_ORDER_LINE : sold_as
+    PLAN_RUN ||--o{ PLAN_TASK : suggests
+    ITEM ||--o{ PLAN_TASK : product
+    BOM ||--o{ PLAN_TASK : version
+    PLAN_TASK ||--|{ PLAN_ALLOCATION : groups
+    SALES_ORDER_LINE o|--o{ PLAN_ALLOCATION : source
+    PLAN_ALLOCATION o|--o{ PLAN_ALLOCATION : parent_demand
+    PLAN_TASK ||--o{ PLAN_MATERIAL : needs_raw
+    ITEM ||--o{ PLAN_MATERIAL : raw_item
+    PLAN_RUN o|--o| PRODUCTION_BATCH : publishes_as
+    PRODUCTION_BATCH ||--o{ PRODUCTION_ORDER : contains
+    PLAN_TASK o|--o| PRODUCTION_ORDER : published_as
+    ITEM ||--o{ PRODUCTION_ORDER : product
+    BOM ||--o{ PRODUCTION_ORDER : version
+    PRODUCTION_ORDER ||--|{ PRODUCTION_ALLOCATION : allocated_to
+    PLAN_ALLOCATION o|--o| PRODUCTION_ALLOCATION : copied_as
+    SALES_ORDER_LINE o|--o{ PRODUCTION_ALLOCATION : source
+    PRODUCTION_ALLOCATION o|--o{ PRODUCTION_ALLOCATION : parent_demand
+    PRODUCTION_ORDER ||--o{ PRODUCTION_MATERIAL : needs_raw
+    ITEM ||--o{ PRODUCTION_MATERIAL : raw_item
+    PRODUCTION_ORDER ||--o{ PRODUCTION_REPORT : reports
+    PRODUCTION_REPORT o|--o| PRODUCTION_REPORT : reverses
+    PRODUCTION_REPORT ||--|{ REPORT_ALLOCATION : distributes
+    PRODUCTION_ALLOCATION ||--o{ REPORT_ALLOCATION : receives
+    APP_USER ||--o{ PRODUCTION_REPORT : submits
+    APP_USER ||--o{ AUDIT_LOG : acts
+    APP_USER ||--o{ IDEMPOTENCY_RECORD : requests
+    ITEM {
+        uuid id PK
+        string code UK
+        string item_type
+        string unit
+        text traceability_info
+    }
+    BOM {
+        uuid id PK
+        uuid item_id FK
+        int version
+        decimal output_qty
+        string status
+    }
+    BOM_LINE {
+        uuid id PK
+        uuid bom_id FK
+        uuid component_item_id FK
+        decimal quantity
+    }
+    SALES_ORDER {
+        uuid id PK
+        string number UK
+        int priority
+        date due_date
+        string status
+    }
+    SALES_ORDER_LINE {
+        uuid id PK
+        uuid sales_order_id FK
+        uuid item_id FK
+        decimal quantity
+    }
+    PLAN_RUN {
+        uuid id PK
+        string status
+        json input_snapshot
+    }
+    PLAN_TASK {
+        uuid id PK
+        uuid plan_run_id FK
+        uuid item_id FK
+        uuid bom_id FK
+        string merge_key
+        decimal quantity
+        int effective_priority
+    }
+    PLAN_ALLOCATION {
+        uuid id PK
+        uuid plan_task_id FK
+        uuid sales_order_line_id FK
+        uuid parent_allocation_id FK
+        string kind
+        decimal planned_qty
+        int priority_snapshot
+        int allocation_rank
+    }
+    PLAN_MATERIAL {
+        uuid id PK
+        uuid plan_task_id FK
+        uuid item_id FK
+        decimal quantity
+    }
+    PRODUCTION_BATCH {
+        uuid id PK
+        uuid source_plan_run_id FK
+        string status
+        int revision
+    }
+    PRODUCTION_ORDER {
+        uuid id PK
+        uuid batch_id FK
+        uuid source_plan_task_id FK
+        uuid item_id FK
+        uuid bom_id FK
+        decimal planned_qty
+        decimal completed_qty
+        int effective_priority
+        string status
+    }
+    PRODUCTION_ALLOCATION {
+        uuid id PK
+        uuid production_order_id FK
+        uuid source_plan_allocation_id FK
+        uuid sales_order_line_id FK
+        uuid parent_allocation_id FK
+        string kind
+        decimal planned_qty
+        decimal fulfilled_qty
+        int priority_snapshot
+        int allocation_rank
+    }
+    PRODUCTION_MATERIAL {
+        uuid id PK
+        uuid production_order_id FK
+        uuid item_id FK
+        decimal quantity
+    }
+    PRODUCTION_REPORT {
+        uuid id PK
+        uuid production_order_id FK
+        uuid reversal_of_id FK
+        int created_by_id FK
+        decimal quantity_delta
+        bigint report_sequence
+        string idempotency_key UK
+    }
+    REPORT_ALLOCATION {
+        uuid id PK
+        uuid report_id FK
+        uuid production_allocation_id FK
+        decimal quantity_delta
+    }
+    APP_USER {
+        int id PK
+        string username UK
+    }
+    AUDIT_LOG {
+        uuid id PK
+        int actor_id FK
+        string object_type
+        uuid object_id
+        json changes
+    }
+    IDEMPOTENCY_RECORD {
+        uuid id PK
+        int user_id FK
+        string operation
+        string request_key
+        string payload_hash
+        json response
+    }

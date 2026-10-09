@@ -1,0 +1,43 @@
+erDiagram
+    Item ||--o{ BOM : 主件
+    BOM ||--|{ BOMLine : 组成
+    Item ||--o{ BOMLine : 组件
+    SalesOrder ||--|{ SalesLine : 明细
+    Item ||--o{ SalesLine : 销售产品
+    Item {
+        bigint id PK
+        string code UK
+        string name
+        string kind
+        string unit
+        text traceability_info
+        boolean is_active
+    }
+    BOM {
+        bigint id PK
+        bigint item_id FK
+        integer version
+        decimal output_qty
+        string status
+    }
+    BOMLine {
+        bigint id PK
+        bigint bom_id FK
+        bigint component_id FK
+        decimal quantity
+    }
+    SalesOrder {
+        bigint id PK
+        string number UK
+        string customer_name
+        integer priority
+        date due_date
+        string status
+        datetime created_at
+    }
+    SalesLine {
+        bigint id PK
+        bigint order_id FK
+        bigint item_id FK
+        decimal quantity
+    }

@@ -1,0 +1,15 @@
+sequenceDiagram
+    actor User as 管理用户
+    participant Vue
+    participant API as BOMViewSet
+    participant PG as PostgreSQL
+    User->>Vue: 发布草稿
+    Vue->>API: POST publish + Session + CSRF
+    API->>PG: 开启事务并取得图写锁
+    API->>PG: 读取主件及组件关系
+    API->>API: 校验类型、启用状态与循环
+    API->>PG: 旧 ACTIVE 改为 RETIRED
+    API->>PG: 当前 DRAFT 改为 ACTIVE
+    PG-->>API: 提交
+    API-->>Vue: 新版本状态
+    Vue-->>User: 刷新列表

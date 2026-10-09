@@ -1,0 +1,136 @@
+erDiagram
+    Item ||--o{ BOM : parent
+    Item ||--o{ BOMLine : component
+    BOM ||--|{ BOMLine : lines
+    SalesOrder ||--|{ SalesLine : lines
+    Item ||--o{ SalesLine : product
+    Plan ||--o| Batch : materializes
+    Batch ||--|{ ProductionOrder : orders
+    Item ||--o{ ProductionOrder : product
+    BOM ||--o{ ProductionOrder : frozen_version
+    ProductionOrder ||--|{ Allocation : sources
+    SalesLine o|--o{ Allocation : sale_source
+    Allocation o|--o{ Allocation : parent_demand
+    ProductionOrder ||--o{ Report : reports
+    Report o|--o| Report : reversal
+    Report ||--|{ ReportAllocation : distributions
+    Allocation ||--o{ ReportAllocation : fulfillment
+    User ||--o{ Report : actor
+    User o|--o{ Audit : actor
+    Item {
+        bigint id PK
+        string code UK
+        string kind
+        string unit
+        text traceability_info
+        string specification
+        string product_standard
+        string allergens
+        int shelf_life_days
+        string storage_condition
+        int revision
+    }
+    BOM {
+        bigint id PK
+        bigint item_id FK
+        int version
+        decimal output_qty
+        string status
+        int revision
+    }
+    BOMLine {
+        bigint id PK
+        bigint bom_id FK
+        bigint component_id FK
+        decimal quantity
+    }
+    SalesOrder {
+        bigint id PK
+        string number UK
+        int priority
+        date due_date
+        string status
+        int revision
+    }
+    SalesLine {
+        bigint id PK
+        bigint order_id FK
+        bigint item_id FK
+        decimal quantity
+    }
+    Plan {
+        uuid id PK
+        string name
+        string status
+        json inputs
+        string fingerprint
+        json data
+        int revision
+    }
+    Batch {
+        uuid id PK
+        uuid plan_id FK
+    }
+    ProductionOrder {
+        uuid id PK
+        string number UK
+        uuid batch_id FK
+        bigint item_id FK
+        bigint bom_id FK
+        string task_key
+        decimal quantity
+        decimal completed_qty
+        decimal demo_progress_percent
+        int priority
+        int sequence
+        string status
+        json snapshot
+        json materials
+        date target_start
+        date target_end
+        string line_label
+        text notes
+        datetime started_at
+        int revision
+    }
+    Allocation {
+        bigint id PK
+        uuid order_id FK
+        bigint sales_line_id FK
+        bigint parent_id FK
+        string kind
+        decimal quantity
+        decimal fulfilled_qty
+        int priority
+        int rank
+        text path
+        json source
+    }
+    Report {
+        uuid id PK
+        uuid order_id FK
+        uuid reversal_of_id FK
+        string request_key UK
+        decimal quantity
+        string batch_code
+        bigint actor_id FK
+        datetime created_at
+    }
+    ReportAllocation {
+        bigint id PK
+        uuid report_id FK
+        bigint allocation_id FK
+        decimal quantity
+    }
+    User {
+        bigint id PK
+        string username UK
+    }
+    Audit {
+        bigint id PK
+        bigint actor_id FK
+        string operation
+        string object_id
+        json details
+        datetime created_at
+    }

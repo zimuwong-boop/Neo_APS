@@ -1,0 +1,9 @@
+flowchart LR
+    B[本机浏览器] -->|127.0.0.1:8080| WEB
+    subgraph C[唯一运行容器 neo-aps]
+        INIT[Docker init 与启动脚本] --> WEB[Gunicorn / Django]
+        INIT --> PG[PostgreSQL 17]
+        WEB --> SPA[Vue 静态文件 / WhiteNoise]
+        WEB -->|容器内 127.0.0.1:5432| PG
+    end
+    PG --> VOL[(命名卷 neo_aps_data)]

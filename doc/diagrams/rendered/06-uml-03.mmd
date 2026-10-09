@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor U as 用户
+    participant F as 产线页
+    participant R as ReportingService
+    participant D as PostgreSQL
+    participant A as 安排页
+    participant S as 销售页
+    U->>F: 提交本次合格数量
+    F->>R: report(delta, revision, key)
+    R->>D: BEGIN / 查询幂等键 / 锁全部来源销售与批次
+    R->>R: 校验状态、依赖与剩余数量
+    R->>R: 按冻结来源等级依次填满分配
+    R->>D: 写报工与回分，更新累计量及SALE对应销售状态
+    R->>D: COMMIT
+    R-->>F: 最新进度和本次各来源回分明细
+    loop 可见页面每 2 秒一次
+        A->>R: 批量查询生产进度
+        R->>D: 查询已提交数据
+        R-->>A: 状态、数量、更新时间
+        S->>R: 批量查询销售进度
+        R->>D: 仅聚合SALE分配完成量
+        R-->>S: 行级已安排量与生产完成量
+    end

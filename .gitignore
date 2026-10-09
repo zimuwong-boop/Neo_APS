@@ -1,0 +1,17 @@
+.venv/
+.tools/
+.env
+.env.dev
+deploy/.env
+frontend/node_modules/
+frontend/dist/
+backend/webdist/
+backend/staticfiles/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+backups/
+*.log

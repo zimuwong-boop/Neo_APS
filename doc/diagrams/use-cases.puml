@@ -1,0 +1,41 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+actor "全权限用户" as User
+rectangle "Neo APS 定制化排产展示系统" {
+  usecase "登录" as Login
+  usecase "维护物料及溯源信息" as Items
+  usecase "维护并发布多级 BOM" as BOM
+  usecase "校验物料类型与无环性" as ValidateBOM
+  usecase "销售单 CRUD 与确认" as Sales
+  usecase "跨订单合并生成排产建议" as Generate
+  usecase "展开 BOM、保留分配与五级排序" as Expand
+  usecase "人工调整建议" as Adjust
+  usecase "发布生产安排" as Publish
+  usecase "校验需求占用与依赖" as ValidatePlan
+  usecase "手工生产单 CRUD" as WorkOrders
+  usecase "开工、暂停、恢复与报工" as Report
+  usecase "按来源等级回分合格产量" as Allocate
+  usecase "预览共享任务取消影响" as CancelImpact
+  usecase "冲销错误报工" as Reverse
+  usecase "查看生产及销售进度" as Progress
+  usecase "查看历史与溯源快照" as History
+}
+User --> Login
+User --> Items
+User --> BOM
+User --> Sales
+User --> Generate
+User --> Adjust
+User --> Publish
+User --> WorkOrders
+User --> Report
+User --> CancelImpact
+User --> Reverse
+User --> Progress
+User --> History
+BOM ..> ValidateBOM : <<include>>
+Generate ..> Expand : <<include>>
+Report ..> Allocate : <<include>>
+Publish ..> ValidatePlan : <<include>>
+@enduml

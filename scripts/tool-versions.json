@@ -1,0 +1,13 @@
+{
+  "python": "3.12.15",
+  "node": {
+    "version": "v24.21.0",
+    "source": "https://nodejs.org/dist/v24.21.0/",
+    "sha256": "158f7685b44de51f6c0df1d153526cbcd3e1bc739a8dfc607721cef75de9e541"
+  },
+  "postgresql": {
+    "version": "17.11",
+    "source": "https://sbp.enterprisedb.com/getfile.jsp?fileid=1260616",
+    "download_sha256": "80379b2c04d51c30225532e0ae04509899141e9957ed096fe749d7fd9df8f82f"
+  }
+}

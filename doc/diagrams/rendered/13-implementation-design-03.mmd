@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor Operator
+    participant Vue
+    participant API
+    participant Service
+    participant PG as PostgreSQL
+    Operator->>Vue: 选择多个销售单并生成
+    Vue->>API: POST plans
+    API->>Service: new_plan(inputs)
+    Service->>PG: 事务 + 图写锁 + 一致输入读取
+    Service->>Service: 逐来源展开 / 签名合并 / 优先拓扑排序
+    Service->>PG: 保存候选聚合与指纹
+    PG-->>Vue: 返回任务 / 来源 / 依赖 / 原料
+    Operator->>Vue: 保存人工调整并发布
+    Vue->>Service: materialize(plan)
+    Service->>PG: 加锁重算指纹 / 检查占用
+    alt 快照过期
+        Service-->>Vue: 409 PLAN_STALE
+    else 有效
+        Service->>PG: 原子创建批次 / 生产单 / 来源分配
+        Service-->>Vue: 批次及全局调序预览入口
+    end
+    Operator->>Vue: 开工并提交合格增量
+    Vue->>Service: report(quantity, request_key, batch_code)
+    Service->>PG: 加锁 / 幂等检查 / 上限检查
+    Service->>PG: 报工 + 按冻结 rank 回分
+    Service->>PG: 更新生产与销售状态 / 审计
+    loop 每2秒
+        Vue->>API: GET production-orders / sales-orders
+        API-->>Vue: 累计量与 SALE 进度
+    end

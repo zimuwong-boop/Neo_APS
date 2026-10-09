@@ -1,0 +1,8 @@
+stateDiagram-v2
+    [*] --> DRAFT
+    DRAFT --> CONFIRMED: 明细合法且确认
+    DRAFT --> [*]: 删除无引用草稿
+    CONFIRMED --> COMPLETED: 所有行SALE回分完成量达标
+    COMPLETED --> CONFIRMED: 合法冲销导致未全部完成
+    CONFIRMED --> CANCELLED: 无有效生产分配后取消
+    CANCELLED --> [*]

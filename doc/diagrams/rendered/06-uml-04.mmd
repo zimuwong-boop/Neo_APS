@@ -1,0 +1,12 @@
+stateDiagram-v2
+    [*] --> DRAFT: 手工创建
+    [*] --> RELEASED: 建议发布
+    DRAFT --> RELEASED: 完整草稿批次发布
+    DRAFT --> [*]: 完整草稿批次删除
+    RELEASED --> IN_PROGRESS: 所有前置单完成后开工
+    IN_PROGRESS --> PAUSED: 暂停
+    PAUSED --> IN_PROGRESS: 恢复
+    IN_PROGRESS --> COMPLETED: 累计合格量等于计划量
+    COMPLETED --> PAUSED: 冲销最新未冲销报告且下游未开工
+    RELEASED --> CANCELLED: 预览确认后取消未开工关联组件
+    CANCELLED --> [*]

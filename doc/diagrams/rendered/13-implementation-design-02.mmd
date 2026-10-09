@@ -1,0 +1,49 @@
+classDiagram
+    class SchedulingEngine {
+        +generate(inputs) data_and_fingerprint
+        +edge_qty(parent, component, output) Decimal
+        +topology(tasks, dependencies) sequence
+    }
+    class ProductionService {
+        +new_plan(inputs) Plan
+        +edit_plan(plan, changes) Plan
+        +materialize(plan) Batch
+        +transition(order, action) ProductionOrder
+        +report(order, payload) Report
+        +reverse_report(report, key) Report
+        +cancel_preview(order) Preview
+        +cancel_component(order, token) Preview
+    }
+    class Plan {
+        +UUID id
+        +JSON inputs
+        +JSON data
+        +String fingerprint
+        +Integer revision
+    }
+    class ProductionOrder {
+        +Decimal quantity
+        +Decimal completed_qty
+        +Decimal demo_progress_percent
+        +Integer priority
+        +String status
+        +JSON snapshot
+    }
+    class Allocation {
+        +String kind
+        +Decimal quantity
+        +Decimal fulfilled_qty
+        +Integer rank
+        +Integer priority
+    }
+    class Report {
+        +Decimal quantity
+        +String request_key
+        +String batch_code
+    }
+    ProductionService ..> SchedulingEngine
+    ProductionService ..> Plan
+    Plan "1" --> "0..*" ProductionOrder : via Batch
+    ProductionOrder "1" --> "1..*" Allocation
+    Allocation "0..1" --> "0..*" Allocation : parent demand
+    ProductionOrder "1" --> "0..*" Report
